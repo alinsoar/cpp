@@ -1,0 +1,23 @@
+
+tree OP {
+    .import ROOT {
+    symbol, bottom, integer
+    }
+}
+
+
+kernelop = CONCAT(bottom* data)
+         | UNION(bottom? data)
+         | KLEENE(kernelop re)
+         | SEND(symbol msg, kernelop re)
+         | BOL(kernelop re)
+   
+op = INTERVAL(bottom from, bottom to)
+   | COMPLEMENT(bottom re)
+   | OPT(bottom re)
+   | REPEAT(integer times1,
+            bottom times2,
+            bottom re)
+   | ANY
+
+

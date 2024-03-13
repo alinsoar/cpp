@@ -1,0 +1,97 @@
+
+tree PP {
+    .import ROOT {
+    integer,
+    bottom,
+    boolean,
+    set,
+    hash,
+    symbol,
+    string,
+    vector,
+    box
+    }
+    .import LEX {
+    id
+    }
+}
+
+directive = IF                 (integer pointer,
+                                integer else_branch_pointer,
+                                integer* defined_idx,
+                                vector test)
+          | IFDEF              (integer pointer,
+                                integer else_branch_pointer,
+                                integer id)
+          | IFNDEF             (integer pointer,
+                                integer else_branch_pointer,
+                                integer id)
+          | ELSE               (integer pointer)
+          | ENDIF              (integer pointer)
+          | JMP                (integer pointer_offset)
+          | MACRO_OBJ          (integer pointer,
+                                bottom name,
+                                dynamic_lexeme* replacement_tok_seq)
+          | MACRO_FUN          (integer pointer,
+                                bottom name,
+                                integer* params,
+                                integer param_count,
+                                dynamic_lexeme* replacement_tok_seq)
+          | UNDEF              (integer pointer,
+                                integer id)
+          | INCLUDE_LOCAL      (integer pointer,
+                                integer header_id)
+          | INCLUDE_SYSTEM     (integer pointer,
+                                integer header_id)
+          | INCLUDE_EXPRESSION (integer pointer,
+                                bottom header_id)
+          | ERROR              (integer pointer,
+                                bottom message)
+          | PRAGMA             (integer pointer,
+                                bottom expr)
+          attributes(integer start_line, integer start_column,
+                     integer end_line,   integer end_column,
+                     bottom filename)
+
+static_lexeme = NUMERIC
+              | FLOAT
+              | INTEGER_BIN
+              | INTEGER_OCT
+              | INTEGER_DEC
+              | INTEGER_HEX
+              | DEFINED
+              | ID
+              | PUNCTUATOR
+              | NEWLINE
+              | STRING
+              | CHARACTER
+              | EOS
+              | PLACEMAKER_4th -- used in the 4th phase only
+              | NOLEXEME
+              attributes(symbol  class,
+                         integer id,
+                         integer co_start_x,
+                         integer co_start_y,
+                         integer co_end_x,
+                         integer co_end_y,
+                         bottom  splice,
+                         bottom  filename,
+                         bottom  aux_param)
+
+dynamic_lexeme = DBG       (bottom* msg)
+               | REGS      (vector reg_vector)
+               | ASSIGN    (integer reg,
+                            dynamic_lexeme val)
+               | ARG       (integer idx)
+               | TOK       (static_lexeme tok,
+                            box blue_paint,
+                            bottom env)
+               | EXPAND    (integer reg)
+               | PASTE     (integer reg1,
+                            integer reg2)
+               | STRINGIZE (integer idx)
+               | CONS      (integer reg1,
+                            integer reg2)
+               | RETURN    (integer reg)
+               | STATICTOK (static_lexeme tok)
+

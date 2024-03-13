@@ -1,0 +1,18 @@
+# -*-makefile-*-
+
+%.def:
+	@echo asdl compile %
+	racket ../asdl/asdl.rkt $(subst .def,.asdl,$@) $@
+
+%.code: %.def
+	@echo asdl pickle ptree
+	racket ${ASDL_GENERATOR} $(subst .code,.def,$@) $@
+
+clean-asdl:
+	rm -f *.code *.def
+
+
+%:
+	@echo \"$@\" is invalid. The valid options for make are
+	@make -pRrq | sed '/\(^[[:alpha:]_]*\)[:].*/{s::\1:; /^all/d; p};d'
+

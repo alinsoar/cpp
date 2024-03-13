@@ -1,0 +1,341 @@
+;; -*- mode:scheme ; buffer-read-only:t -*-
+
+;;; LEXICAL GRAMMAR of the C LANGUAGE.
+;;; Copyright (C) 2015  Alin C. Soare
+
+;;; This file is part of the Little Computer.
+
+;;; This program is free software: you can redistribute it and/or modify
+;;; it under the terms of the GNU General Public License as published by
+;;; the Free Software Foundation, either version 3 of the License, or
+;;; (at your option) any later version.
+
+;;; This program is distributed in the hope that it will be useful,
+;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;; GNU General Public License for more details.
+
+;;; You should have received a copy of the GNU General Public License
+;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;;                                                     Keywords
+;;; ============================================================
+
+(~~> keyword
+     (UNION
+      "auto|extern|register|static"
+      "typedef"
+      "sizeof"
+      "unsigned|signed"
+      "union|struct|enum"
+      "void"
+      "float|double"
+      "char|int|short|long"
+      "const|volatile|restrict|inline"
+      "do|while|for|break|continue"
+      "switch|default|goto|case"
+      "if|else"
+      "return"))
+
+(~~> id
+     (CONCAT
+      id-nondigit
+      (REPEAT 0 INF
+              (UNION id-nondigit digit))))
+
+(~~> id-nondigit
+     (UNION nondigit
+            universal-character-name
+            implementation-defined-char))
+
+(~~> implementation-defined-char
+     "[@$]")
+
+(~~> nondigit
+     "[_a-zA-Z]")
+
+(~~> digit
+     "[0-9]")
+
+;;;                                    Universal character names
+;;; ============================================================
+
+(~~> universal-character-name
+     (UNION (CONCAT "\\u" hex-quad)
+            (CONCAT "\\U" hex-quad hex-quad)))
+
+(~~> hex-quad
+     (REPEAT 4 4 hexadecimal-digit))
+
+;;;                                                    Constants
+;;; ============================================================
+
+(~~> integer-ct-dec (CONCAT decimal-ct (OPT integer-suffix)))
+(~~> integer-ct-hex (CONCAT hexadecimal-ct (OPT integer-suffix)))
+(~~> integer-ct-oct (CONCAT octal-ct (OPT integer-suffix)))
+(~~> integer-ct-bin (CONCAT binary-ct (OPT integer-suffix)))
+
+(~~> decimal-ct
+     (CONCAT nonzero-digit
+             (REPEAT 0 INF digit)))
+(~~> octal-ct
+     (CONCAT zero
+             (REPEAT 0 INF octal-digit)))
+(~~> hexadecimal-ct
+     (CONCAT hexadecimal-prefix
+             (REPEAT 1 INF hexadecimal-digit)))
+(~~> binary-ct
+     (CONCAT binary-prefix
+             (REPEAT 1 INF binary-digit)))
+(~~> binary-prefix
+     "0b|0B")
+(~~> hexadecimal-prefix
+     "0x|0X")
+(~~> nonzero-digit
+     "[1-9]")
+(~~> octal-digit
+     "[0-7]")
+(~~> binary-digit
+     "[01]")
+(~~> hexadecimal-digit
+     "[0-9a-fA-F]")
+(~~> integer-suffix
+     (UNION (CONCAT unsigned-suffix (OPT long-suffix))
+            (CONCAT unsigned-suffix long-long-suffix)
+            (CONCAT long-suffix (OPT unsigned-suffix))
+            (CONCAT long-long-suffix (OPT unsigned-suffix))))
+(~~> unsigned-suffix
+     "u|U")
+(~~> long-suffix
+     "l|L")
+(~~> long-long-suffix
+     "ll|LL")
+(~~> floating-ct
+     (UNION decimal-floating-ct
+            hexadecimal-floating-ct))
+(~~> decimal-floating-ct
+     (UNION (CONCAT fractional-ct (OPT exponent-part) (OPT floating-suffix))
+            (CONCAT digit-sequence exponent-part (OPT floating-suffix))))
+(~~> hexadecimal-floating-ct
+     (UNION (CONCAT hexadecimal-prefix hexadecimal-fractional-ct
+                    binary-exponent-part (OPT floating-suffix))
+            (CONCAT hexadecimal-prefix hexadecimal-digit-sequence
+                    binary-exponent-part (OPT floating-suffix))))
+(~~> fractional-ct
+     (UNION (CONCAT (OPT digit-sequence) #\. digit-sequence)
+            (CONCAT digit-sequence #\.)))
+(~~> exponent-part
+     (UNION (CONCAT #\e (OPT sign) digit-sequence)
+            (CONCAT #\E (OPT sign) digit-sequence)))
+(~~> sign
+     "+|-")
+(~~> digit-sequence
+     (REPEAT 1 INF digit))
+(~~> hexadecimal-fractional-ct
+     (UNION (CONCAT (OPT hexadecimal-digit-sequence)  #\.)
+            hexadecimal-digit-sequence
+            (CONCAT hexadecimal-digit-sequence #\.)))
+(~~> binary-exponent-part
+     (UNION (CONCAT "p" (OPT sign) digit-sequence)
+            (CONCAT "P" (OPT sign) digit-sequence)))
+(~~> hexadecimal-digit-sequence
+     (REPEAT 1 INF hexadecimal-digit))
+(~~> floating-suffix
+     "f|l|F|L")
+(~~> character-ct
+     (CONCAT (OPT "L") #\' c-char-sequence #\'))
+(~~> c-char-sequence
+     (REPEAT 1 INF c-char))
+(~~> c-char
+     (UNION "[^'\\\n]"
+            escape-sequence))
+(~~> escape-sequence
+     (UNION simple-escape-sequence
+            octal-escape-sequence
+            hexadecimal-escape-sequence
+            universal-character-name))
+(~~> simple-escape-sequence
+     "\\'|\\\"|\\[?]|\\\\|\\a|\\b|\\f|\\n|\\r|\\t|\\v")
+(~~> octal-escape-sequence
+     (UNION (CONCAT "\\" octal-digit)
+            (CONCAT "\\" octal-digit octal-digit)
+            (CONCAT "\\" octal-digit octal-digit octal-digit)))
+(~~> hexadecimal-escape-sequence
+     (CONCAT "\\x" (REPEAT 1 INF hexadecimal-digit)))
+
+(~~> zero
+     #\0)
+(~~> new-line
+     #\newline)
+
+;;;                                                     Comments
+;;; ============================================================
+
+(~~> c/comment
+     "/[*]([^*]|[*][*]*[^*/])*[*][*]*/")
+
+(~~> cpp/comment
+     "//[^\n]*")
+
+(~~> comment
+     (UNION c/comment cpp/comment))
+
+(~~> nonclosed-c/comment
+     "/[*]")
+
+;;;                                              String Literals
+;;; ============================================================
+
+(~~> string-literal
+     (CONCAT (OPT "L") #\" (OPT s-char-sequence) #\"))
+(~~> s-char-sequence
+     (REPEAT 1 INF s-char))
+(~~> s-char
+     (UNION "[^\"\\\n]"
+            escape-sequence))
+(~~> nonclosed-string-literal
+     "[\"]")
+
+;;;                                                  Punctuators
+;;; ============================================================
+
+(~~> punctuator
+     (UNION
+      "[[]|[]]"
+      "[(]|[)]|[{]|[}]"
+      "[.]|->"
+      "++|--"
+      "&|[*]|+|-|~|!|/|%"
+      "<<|>>"
+      "<|>|<=|>=|==|!="
+      "^|[|]"
+      "&&|[|][|]"
+      "[?]|:"
+      ";"
+      "[.][.][.]"
+      "=|[*]=|/=|%=|+=|-=|<<=|>>=|&=|^=|[|]="
+      ","
+      "#|##"))
+
+;;;                                                  Punctuators
+;;; ============================================================
+
+(~~> control-chars
+     (UNION
+      #\page
+      ))
+
+;;;                                                 Header names
+;;; ============================================================
+
+(~~> header-name
+     (UNION (CONCAT "<" h-char-sequence ">")
+            (CONCAT #\" q-char-sequence #\")))
+(~~> h-char-sequence
+     (REPEAT 1 INF h-char))
+(~~> h-char
+     "[^\n>]")
+(~~> q-char-sequence
+     (REPEAT 1 INF q-char))
+(~~> q-char
+     "[^\n\"]")
+
+;;;                                        Preprocessing numbers
+;;; ============================================================
+
+(~~> pp-number
+     (CONCAT (UNION digit
+                    (CONCAT "[.]" digit))
+             (REPEAT 0 INF (UNION digit
+                                  id-nondigit
+                                  (CONCAT "e" sign)
+                                  (CONCAT "E" sign)
+                                  (CONCAT "p" sign)
+                                  (CONCAT "P" sign)
+                                  "[.]"))))
+
+;;;                                     Preprocessing directives
+;;; ============================================================
+
+(~~> whitespace
+     (REPEAT 1 INF (UNION #\tab #\space)))
+
+(~~> __
+     (REPEAT 0 INF (UNION whitespace c/comment)))
+
+(~~> pp-control-line-define-macro-obj-directive
+     (CONCAT "#"__"define" __ id))
+(~~> pp-control-line-define-macro-fun-directive
+     (CONCAT "#"__"define" __ id "[(]"))
+(~~> pp-control-line-undefine-directive
+     (CONCAT "#"__"undef" __ id))
+(~~> pp-control-line-include-directive
+     (CONCAT "#"__"include" __ (OPT header-name)))
+
+(~~> pp-conditional-inclusion-if
+     (CONCAT "#"__"if"))
+(~~> pp-conditional-inclusion-ifdef
+     (CONCAT "#"__"ifdef" __ id))
+(~~> pp-conditional-inclusion-ifndef
+     (CONCAT "#"__"ifndef" __ id))
+(~~> pp-conditional-inclusion-elif
+     (CONCAT "#"__"elif"))
+(~~> pp-conditional-inclusion-else
+     (CONCAT "#"__"else"))
+(~~> pp-conditional-inclusion-endif
+     (CONCAT "#"__"endif"))
+
+(~~> pp-error
+     (CONCAT "#"__"error"))
+(~~> pp-line
+     (CONCAT "#"__"line"))
+(~~> pp-pragma
+     (CONCAT "#"__"pragma"))
+
+(~~> pp-implementation-defined
+     (UNION pp-warning))
+(~~> pp-warning
+     (CONCAT "#"__"warning"))
+
+;;;                                                   Reductions
+;;; ============================================================
+
+(~~> :start-symbol
+     (REDUCE
+      [whitespace                 @blank]
+      [new-line                   @return]
+      [punctuator                 @punct]
+      [keyword                    @keyword]
+      [id                         @id]
+      [integer-ct-dec             @ct-integer-dec]
+      [integer-ct-oct             @ct-integer-oct]
+      [integer-ct-hex             @ct-integer-hex]
+      [integer-ct-bin             @ct-integer-bin] ; this is GNU extension
+      [floating-ct                @ct-float]
+      [pp-number                  @pp-numeric]
+      [character-ct               @ct-char]
+      [string-literal             @string]
+      [comment                    @comment]
+      [control-chars              @ignore]
+      
+      [nonclosed-c/comment        @nonclosed-comment]
+      [nonclosed-string-literal   @nonclosed-string]
+      
+      [pp-error                   @pp-error]
+      [pp-line                    @pp-line]
+      [pp-pragma                  @pp-pragma]    
+      ;; [pp-defined-operator   @pp-defined-op]
+      
+      [pp-control-line-define-macro-obj-directive     @pp-define-obj]
+      [pp-control-line-define-macro-fun-directive     @pp-define-fun]
+      [pp-control-line-undefine-directive             @pp-undef]
+      [pp-control-line-include-directive              @pp-include]
+      [pp-conditional-inclusion-if                    @pp-if]
+      [pp-conditional-inclusion-ifdef                 @pp-ifdef]
+      [pp-conditional-inclusion-ifndef                @pp-ifndef]
+      [pp-conditional-inclusion-elif                  @pp-elif]
+      [pp-conditional-inclusion-else                  @pp-else]
+      [pp-conditional-inclusion-endif                 @pp-endif]
+      
+      [pp-implementation-defined                      @pp-impl]
+      ))

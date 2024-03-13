@@ -1,0 +1,138 @@
+-- -*- mode:asdl; buffer-read-only:t -*-
+
+tree PTREE {
+     .import LEX {
+         id,
+         string,
+         tok_ct
+     }
+
+     .import CTOK {
+         key,
+         punct
+     }
+
+     .import ROOT {
+         ct,
+         bottom
+     }
+}
+
+storage_class_specifier = SCS(key*) | SCS_EMPTY
+type_specifier          = TS(key*)  | TS_EMPTY
+type_qualifier          = TQ(key*)  | TQ_EMPTY
+function_specifier      = FS(key*)  | FS_EMPTY
+
+type = TSPEC(type_specifier)
+     | TNAME(type_specifier)
+     | STRUCT(id tag, type_specifier)
+     | UNION(id tag, type_specifier)
+     | ENUM(id tag, type_specifier)
+     | POINTER(type)
+     | FUNCTION_ANSI(type, ct, bottom*) -- bottom - static-ct or parameter
+     | FUNCTION_KR(type, id*)
+     | ARRAY(type, expression)
+     attributes(type_qualifier)
+
+def = DEFVAR(initializer)
+    | DEFTYPE(initializer)
+    | TYPE
+    -- function declaration
+    | FUNPROTO_ANSI
+    | FUNDECL_KR
+    -- function parameter
+    | PARAM
+    -- structure and union members
+    | MEMBER
+    | BITFIELD(initializer)
+    attributes(id, type, storage_class_specifier, function_specifier)
+
+fundef = DEFUN
+       | DEFUN_KR(def*)
+       attributes(statement body, def)
+
+deftag = DEFTAG_STRUCT(def*)
+       | DEFTAG_UNION(def*)
+       | DEFTAG_ENUM(enumerator*)
+       -- declarations
+       | DECLTAG_STRUCT
+       | DECLTAG_UNION
+       | DECLTAG_ENUM
+       attributes (id tag)
+
+def_static = DEF_STATIC_CONSTANT(tok_ct, string)
+
+enumerator = ENUMERATOR(id, expression) | ENUMERATOR_NOINIT(id)
+
+expression = EMPTY_EXPRESSION
+           | PRIMARY_CONSTANT_EXPRESSION(tok_ct)
+
+           -- post
+           | ARRAY_SUBSCRIPT_EXPRESSION(expression, expression)
+           | FUNCTION_CALL_EXPRESSION(expression, expression*)
+           | STRUCT_UNION_DIRECT_MEMBER_EXPRESSION(expression, id)
+           | STRUCT_UNION_POINTER_MEMBER_EXPRESSION(expression, id)
+           | POST_INCREMENTER_EXPRESSION(punct, expression)
+           | POST_DECREMENTER_EXPRESSION(punct, expression)
+           | COMPOUND_LITERAL_EXPRESSION(def, design_init*)
+
+           -- unary
+           | UNARY_OPERATOR_EXPRESSION(punct, expression)
+           | UNARY_SIZEOF_EXPR_EXPRESSION(key, expression)
+           | PRE_UNARY_INCREMENTER_EXPRESSION(key, expression)
+           | PRE_UNARY_DECREMENTER_EXPRESSION(key, expression)
+
+           -- pre
+           | CAST_EXPRESSION(def, expression)
+           | UNARY_SIZEOF_TYPE_EXPRESSION(key, def)
+
+           -- binop
+           | ADDITIVE_EXPRESSION        (punct, expression, expression)
+           | MULTIPLICATIVE_EXPRESSION  (punct, expression, expression)
+           | SHIFT_EXPRESSION           (punct, expression, expression)
+           | RELATIONAL_EXPRESSION      (punct, expression, expression)
+           | EQUALITY_EXPRESSION        (punct, expression, expression)
+           | AND_EXPRESSION             (punct, expression, expression)
+           | EXCLUSIVE_OR_EXPRESSION    (punct, expression, expression)
+           | INCLUSIVE_OR_EXPRESSION    (punct, expression, expression)
+           | LOGAND_EXPRESSION          (punct, expression, expression)
+           | LOGOR_EXPRESSION           (punct, expression, expression)
+
+           -- conditional
+           | CONDITIONAL_EXPRESSION(expression, expression, expression)
+
+           -- assignment
+           | ASSIGNMENT_EXPRESSION(punct, expression, expression)
+
+           -- comma
+           | COMMA_EXPRESSION(punct, expression, expression)
+
+initializer
+        = NO_INIT
+	| INIT_LIST(design_init*)
+	| INIT_EXPR(expression)
+
+design_init = (designation?, initializer)
+
+designation = DESIGNATION(desginator*) | DESIGNATION_EMPTY
+
+desginator = DESIGNATOR_IDX(expression)
+           | DESIGNATOR_MBR(id)
+
+statement = COMPOUND_STAT(bottom*) -- bottom - def or static-ct or statement
+          | LABELED_STATEMENT_ID(id, statement)
+          | LABELED_STATEMENT_CASE(expression, statement)
+          | LABELED_STATEMENT_DEFAULT_CASE(statement)
+          | EXPRESSION_STATEMENT(expression)
+          | IF_THEN_ELSE_STATEMENT(expression, statement, statement)
+          | IF_THEN_STATEMENT(expression, statement)
+          | SWITCH_STATEMENT(expression, statement)
+          | FOR_STATEMENT(expression, expression, expression, statement)
+          | WHILE_STATEMENT(expression, statement)
+          | DO_STATEMENT(expression, statement)
+          | RETURN_STATEMENT(expression)
+          | BREAK_STATEMENT
+          | CONTINUE_STATEMENT
+          | GOTO_STATEMENT(id)
+
+

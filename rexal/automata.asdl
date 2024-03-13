@@ -1,0 +1,18 @@
+
+tree AUTO {
+    .import ROOT {
+    symbol, bottom, integer
+    }
+}
+
+edge = EDGE(integer input, integer to_node)
+
+dfa = NODE(integer id,
+           hash    edges,
+           boolean bol,
+           symbol* exit_codes,
+           symbol* marker )
+
+nfa = EDGE
+    | NODE
+    | EPSILON

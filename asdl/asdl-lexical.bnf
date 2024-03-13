@@ -1,0 +1,120 @@
+;; -*- mode:scheme ; buffer-read-only:nil -*-
+
+;;; context free grammar
+;;; ==================================================
+
+(~~> tree
+     (CONCAT "tree"
+             _ (SEND MODULE id)
+             _ "[{]"
+             _ (REPEAT 0 INF 
+                       (CONCAT _ ".import"
+                               _ (SEND IMPORT-MOD id)
+                               _ import))
+             _ "[}]"))
+
+(~~> import
+     (CONCAT
+      _ "[{]"
+      _ (REPEAT 0 INF (CONCAT _ (SEND IMPORT id)
+                              _ ","))
+      _ (SEND IMPORT id)
+      _ "[}]"))
+
+(~~> definition
+     (CONCAT (SEND DEF-TYPE-ID typ_id)
+             _ "[=]"
+             _ type))
+
+(~~> type
+     (UNION sum_type product_type))
+
+(~~> product_type
+     (SEND PRODUCT
+           fields))
+
+(~~> sum_type
+     (SEND SUM
+           (CONCAT
+            _ constructor
+            _ (REPEAT 0 INF
+                      (CONCAT _ "[|]" _ constructor))
+            _ (OPT (CONCAT
+                    "attributes"
+                    _ (SEND ATTRIBUTES fields))))))
+
+(~~> constructor
+     (CONCAT (SEND CONS-ID con_id)
+             _ (OPT fields)
+             _ (REPEAT 0 INF (CONCAT _ comment _))))
+
+(~~> fields
+     (CONCAT
+      _ "[(]"
+      _ (REPEAT 0 INF (CONCAT field _ "[,]"))
+      _ field
+      _ "[)]"))
+
+(~~> field
+     (CONCAT _ (SEND FIELD-TYPE-ID typ_id)
+             _ (SEND FIELD-TYPE-OPT (OPT "[?*]"))
+             _ (SEND FIELD-ID (OPT id))))
+
+;;; lexical grammar
+;;; ==================================================
+
+(~~> upper
+     "[A-Z]")
+
+(~~> lower
+     "[a-z]")
+
+(~~> alpha
+     (UNION "[_]" upper lower))
+
+(~~> alpha_num
+     (UNION alpha "[0-9]"))
+
+(~~> typ_id
+     (CONCAT lower (REPEAT 0 INF alpha_num)))
+
+(~~> con_id
+     (CONCAT upper (REPEAT 0 INF alpha_num)))
+
+(~~> id
+     (UNION typ_id con_id))
+
+(~~> whitespace
+     (REPEAT 1 INF (UNION #\tab #\space)))
+
+(~~> _
+     (REPEAT 0 INF
+             (UNION #\tab #\space #\newline)))
+
+(~~> new-line
+     #\newline)
+
+(~~> comment
+     (CONCAT
+      "--"
+      (REPEAT 0 INF
+              (UNION #\tab #\space alpha_num
+                     ;; "[.,]"
+                     ;; "[{}]"
+                     "[()]"
+                     ;; "[|]"
+                     "[=]"
+                     "[*-:;]"
+                     ))))
+
+;;; reductions
+;;; ==================================================
+
+(~~> :start-symbol
+     (REDUCE
+      [tree                  @tree]
+      [definition            @df]
+      [whitespace            @blank]
+      [new-line              @nl]
+      [comment               @comm]
+      ))

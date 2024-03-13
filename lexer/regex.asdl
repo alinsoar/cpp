@@ -1,0 +1,23 @@
+
+tree RE {
+    .import ROOT {
+    symbol, bottom
+    }
+}
+
+
+
+
+regexp = POP(symbol r)
+       | PUSH(symbol r)
+       | EDGE(symbol r, symbol p)
+       | SET(symbol r, bottom x)
+       | ALTERNATIVE(symbol r, symbol p)
+       | KLEENE(symbol r)
+       | NEW(bottom r)
+
+
+data = CH
+     | UNION
+     | INTERVAL
+

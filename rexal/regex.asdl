@@ -1,0 +1,25 @@
+
+
+tree RE {
+    .import ROOT {
+    symbol, bottom, integer
+    }
+}
+
+-- combinators used internally by rexal
+
+rexal = POP(symbol r)
+      | PUSH(symbol r)
+      | EDGE(symbol r, symbol p)
+      | ASSIGN(symbol r, bottom x)
+      | ALTERNATIVE(symbol r, symbol p)
+      | KLEENE(symbol r)
+      | NEW(bottom r)
+      | COMPLEMENT(symbol r)
+      | BOL(symbol r)
+      | DIFFERRENCE
+      | OPT(symbol r)
+      | ANY(symbol r)
+      | INTERVAL(symbol r, symbol p)
+      
+      

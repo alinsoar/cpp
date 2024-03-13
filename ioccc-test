@@ -1,0 +1,40 @@
+# -*- shell-script -*-
+
+if [ "$#" != "1" ]
+then
+    echo $0 '<IOCCC-source-dir>'
+    exit 1
+fi
+
+function msg()
+{
+    echo $1 | tee -a ${IOCCCLOG} ${IOCCCLOG}.stderr
+}
+
+IOCCC_DIR=$1
+IOCCC_FILES=$(find ${IOCCC_DIR} -name '*.c')
+
+IOCCCLOG=ioccc-log
+if [ -f ${IOCCCLOG} ]
+then
+    OLDLOG=`mktemp -u ioccc--log-XXX`
+    mv ${IOCCCLOG} ${OLDLOG}
+    mv ${IOCCCLOG}.stderr ${OLDLOG}.stderr 2>/dev/null
+    echo ${IOCCCLOG} "~~>" ${OLDLOG}
+fi
+
+exec 2>${IOCCCLOG}.stderr
+
+for x in ${IOCCC_FILES}
+do
+    msg "TRY $x"
+    racket ./cc.rkt $x >>${IOCCCLOG}
+    if [ "$?" = "0" ]
+    then msg OK;
+    else msg ERROR;
+    fi
+    msg
+    msg ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    msg
+done
+
