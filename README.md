@@ -1,9 +1,12 @@
-# cpp
+
+
+# DESCRIPTION
+
 A C preprocessor written in scheme.
 
-Example:
+# Example
 
-
+```
 racket cc.rkt ./test/cprep1/char.c
  Compile ./test/cprep1/char.c
  .CPP ./test/cprep1/char.c
@@ -16,5 +19,5 @@ racket cc.rkt ./test/cprep1/char.c
  (CTOK.ID H 22 0 ./test/cprep1/char.c)
  (CTOK.ID I 24 0 ./test/cprep1/char.c)
  FINE: 0
-
+```
  
