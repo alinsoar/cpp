@@ -6,6 +6,25 @@ A C preprocessor written in scheme.
 
 # Examples
 
+
+```
+% racket cc.rkt ./test/cprep1/incl.c
+ Compile ./test/cprep1/incl.c
+ .CPP ./test/cprep1/incl.c
+ (CTOK.ASTERISK 4 0 ./test/cprep1/incl.c)
+ (CTOK.ASTERISK 4 1 ./test/cprep1/incl.c)
+ (CTOK.ID main 5 0 ./test/cprep1/incl.c)
+ (CTOK.OPEN_BRACE 6 0 ./test/cprep1/incl.c)
+ (CTOK.INTEGER 10 int 5 10 /work/C-PREPROCESSOR/ccomp/test/cprep1/incl.h)
+ (CTOK.ADDITION 7 3 ./test/cprep1/incl.c)
+ (CTOK.INTEGER 1 int 7 4 ./test/cprep1/incl.c)
+ (CTOK.SEMICOLON 7 5 ./test/cprep1/incl.c)
+ (CTOK.CLOSE_BRACE 8 0 ./test/cprep1/incl.c)
+ FINE: 0
+```
+
+
+
 ```
 % racket cc.rkt ./test/cprep1/char.c
  Compile ./test/cprep1/char.c
@@ -146,19 +165,3 @@ A C preprocessor written in scheme.
  FINE: 0
 ```
  
-```
-% racket cc.rkt ./test/cprep1/incl.c
- Compile ./test/cprep1/incl.c
- .CPP ./test/cprep1/incl.c
- (CTOK.ASTERISK 4 0 ./test/cprep1/incl.c)
- (CTOK.ASTERISK 4 1 ./test/cprep1/incl.c)
- (CTOK.ID main 5 0 ./test/cprep1/incl.c)
- (CTOK.OPEN_BRACE 6 0 ./test/cprep1/incl.c)
- (CTOK.INTEGER 10 int 5 10 /work/C-PREPROCESSOR/ccomp/test/cprep1/incl.h)
- (CTOK.ADDITION 7 3 ./test/cprep1/incl.c)
- (CTOK.INTEGER 1 int 7 4 ./test/cprep1/incl.c)
- (CTOK.SEMICOLON 7 5 ./test/cprep1/incl.c)
- (CTOK.CLOSE_BRACE 8 0 ./test/cprep1/incl.c)
- FINE: 0
-```
-
