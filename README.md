@@ -38,7 +38,9 @@ A C preprocessor written in scheme.
  (CTOK.ID H 22 0 ./test/cprep1/char.c)
  (CTOK.ID I 24 0 ./test/cprep1/char.c)
  FINE: 0
+```
 
+```
 % racket cc.rkt ./test/ioccc-pp-test/2000/primenum.c
  Compile ./test/ioccc-pp-test/2000/primenum.c
  .CPP ./test/ioccc-pp-test/2000/primenum.c
