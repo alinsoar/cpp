@@ -2,7 +2,7 @@
 
 # Description
 
-A C preprocessor written in scheme.
+A C preprocessor written in scheme.  It was tested against the gnu cpp output on Ioccc source code and against the linux kernel.  
 
 # Examples
 
