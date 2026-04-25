@@ -2,7 +2,13 @@
 
 # Description
 
-A C preprocessor written in scheme.  It was tested against the gnu cpp output on Ioccc source code and against the linux kernel.  
+A C preprocessor written in scheme.
+
+It was tested against the gnu cpp output on [Ioccc source code](https://github.com/ioccc-src) and against the [linux kernel](https://github.com/torvalds/linux).
+
+It implements the Prosser's algorithm.  Being written in lisp, it does not work fast but it works correctly.
+
+
 
 # Examples
 
